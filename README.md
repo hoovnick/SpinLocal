@@ -50,7 +50,7 @@ sudo apt install ffmpeg
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/yourusername/SpinLocal.git
+git clone https://github.com/hoovnick/SpinLocal.git
 cd SpinLocal
 ```
 
