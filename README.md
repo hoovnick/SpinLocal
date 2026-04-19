@@ -1,6 +1,6 @@
-# SpinLocal
+# SpinLocal — Self-Hosted Discord Music Bot
 
-A Discord bot that plays your **locally hosted music files** in voice channels — no YouTube, no Spotify, no external APIs. Just your own music, your own server, your own way.
+Play your **local music files** in Discord voice channels — no YouTube, no Spotify, no external APIs. SpinLocal is a self-hosted Discord bot that streams your own MP3, FLAC, WAV, and more directly from your machine. Your music, your server, your control.
 
 Supports playlists, queue management, category folders, looping, shuffle-looping, and an interactive playlist editor with Discord buttons. Built for streamers and communities that want full control over their music.
 
@@ -8,14 +8,14 @@ Supports playlists, queue management, category folders, looping, shuffle-looping
 
 ## Features
 
-- Play local MP3, WAV, OGG, FLAC, and M4A files
-- Organize music into category subfolders
+- Stream local MP3, WAV, OGG, FLAC, and M4A files directly in Discord voice channels
+- Organize music into category subfolders — queue or loop entire folders
 - Full queue control — skip, remove, reorder, shuffle
 - Named playlists with an interactive button-based editor
 - Loop a single track, a playlist, or an entire category
 - Continuous shuffle-loop (re-shuffles every pass)
-- Role-based access control via a Discord "DJ" role
-- Zero external dependencies beyond Python and FFmpeg
+- Role-based access control via a configurable Discord "DJ" role
+- 100% self-hosted — zero external music APIs, just Python and FFmpeg
 
 ---
 
