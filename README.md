@@ -16,6 +16,8 @@ Supports playlists, queue management, category folders, looping, shuffle-looping
 - Continuous shuffle-loop (re-shuffles every pass)
 - Role-based access control via a configurable Discord "DJ" role
 - 100% self-hosted — zero external music APIs, just Python and FFmpeg
+- **Watchdog** — auto-restarts the bot if it crashes or the event loop freezes
+- **Guardian** — optional second bot that lets a trusted user restart SpinLocal from Discord
 
 ---
 
@@ -121,10 +123,17 @@ In your Discord server:
 
 ### 8. Run the bot
 
-**Windows** — double-click `run.bat`, or from a terminal:
+**Windows (recommended — with watchdog):**
+```bash
+python watchdog.py
+```
+Or double-click `run_all.bat` to start the watchdog + optional guardian together.
+
+**Windows (simple, no watchdog):**
 ```bash
 python bot.py
 ```
+Or double-click `run.bat`.
 
 **Mac/Linux:**
 ```bash
@@ -133,6 +142,74 @@ chmod +x run.sh
 ```
 
 The bot will print `SpinLocal online as ...` when it's ready.
+
+---
+
+## Watchdog & Auto-Restart
+
+SpinLocal includes a watchdog that monitors the bot and restarts it automatically if:
+- The bot process crashes or exits unexpectedly
+- The bot's event loop freezes (heartbeat goes stale for >90 seconds)
+- A manual restart is requested via the Guardian bot
+
+**To use the watchdog**, run `watchdog.py` instead of `bot.py`:
+```bash
+python watchdog.py
+```
+
+All bot output is saved to `data/bot.log`. The watchdog logs to stdout (or `data/watchdog.log` when using `run_all.bat` / `launcher.py`).
+
+### Windows: Auto-start on login (background, no windows)
+
+To have SpinLocal start silently when your PC boots:
+
+1. Right-click `register_task.ps1` → **Run with PowerShell** (as Administrator) — run this once.
+2. SpinLocal will now start automatically at every login.
+
+To start it immediately without rebooting:
+```powershell
+Start-ScheduledTask -TaskName 'SpinLocal'
+```
+
+To view logs while running headlessly, double-click **`view_logs.bat`**.
+
+To remove the auto-start task:
+```powershell
+Unregister-ScheduledTask -TaskName 'SpinLocal' -Confirm:$false
+```
+
+---
+
+## Guardian Bot (Optional Remote Restart)
+
+The Guardian is a separate, lightweight Discord bot that your co-host or partner can use to restart SpinLocal when it freezes — even while you're away.
+
+### Why a separate bot?
+
+If SpinLocal's event loop is frozen, it can't receive commands. The Guardian runs in its own process so it stays responsive no matter what SpinLocal is doing.
+
+### Setup
+
+1. Go to [discord.com/developers/applications](https://discord.com/developers/applications) → **New Application** → name it (e.g. "SpinLocal Guardian")
+2. Go to **Bot** → enable **Message Content Intent**
+3. Copy the token and add it to your `.env`:
+   ```env
+   GUARDIAN_TOKEN=your_guardian_token_here
+   ```
+4. (Recommended) Create a private channel in your Discord for guardian commands, copy its ID (right-click → Copy Channel ID with Developer Mode on), and add it:
+   ```env
+   GUARDIAN_CHANNEL_ID=123456789012345678
+   ```
+5. Invite the Guardian bot: **OAuth2 → URL Generator** → Scopes: `bot` → Permissions: `Send Messages`, `Read Message History` → open the URL and invite.
+
+### Guardian commands
+
+| Command | Description |
+|---|---|
+| `!spinrestart` | Signal the watchdog to restart SpinLocal |
+| `!guardianping` | Confirm the Guardian itself is online |
+
+If `GUARDIAN_CHANNEL_ID` is set, `!spinrestart` only works in that channel.
 
 ---
 
@@ -223,6 +300,19 @@ All settings live in `.env`. Copy `.env.example` to get started.
 **Songs not found with `!play`**
 - Check that `MUSIC_ROOT` in `.env` points to the correct folder.
 - Song search matches against filenames (without extension). Use `!list` to browse what's available.
+
+**Watchdog killed the bot but never restarted it**
+- Make sure you're running `watchdog.py` from inside the SpinLocal directory, not a different folder.
+- Check `data/bot.log` for the crash reason — if the bot exits immediately, the error will be there.
+
+**Guardian won't start**
+- Confirm `GUARDIAN_TOKEN` is set in `.env` and is the Guardian bot's token (not the main bot's token).
+- Make sure `Message Content Intent` is enabled for the Guardian bot in the Discord Developer Portal.
+
+**`!spinrestart` does nothing**
+- Confirm the Guardian bot is online (`!guardianping`).
+- If `GUARDIAN_CHANNEL_ID` is set, make sure you're in that exact channel.
+- Check `data/watchdog.log` — the watchdog polls every 60 seconds, so restart may take up to 60 seconds.
 
 ---
 

@@ -1,10 +1,15 @@
 import asyncio
 import os
+import time
+from pathlib import Path
+
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
 load_dotenv()
+
+HEARTBEAT_FILE = Path("data/heartbeat.txt")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -14,8 +19,19 @@ intents.voice_states = True
 bot = commands.Bot(command_prefix=os.getenv("COMMAND_PREFIX", "!"), intents=intents)
 
 
+@tasks.loop(seconds=30)
+async def heartbeat():
+    """Write a timestamp every 30s so the watchdog knows the event loop is alive."""
+    try:
+        HEARTBEAT_FILE.parent.mkdir(exist_ok=True)
+        HEARTBEAT_FILE.write_text(str(time.time()))
+    except Exception as e:
+        print(f"[Heartbeat] Write failed: {e}")
+
+
 @bot.event
 async def on_ready():
+    heartbeat.start()
     print(f"SpinLocal online as {bot.user} (ID: {bot.user.id})")
     print(f"discord.py version: {discord.__version__}")
     print("------")
